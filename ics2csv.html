@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Merge ICS Files and Export as CSV</title>
+	<style>
+		body {
+			font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+			background: rgba(0, 0, 0, 0.9);
+		}
+
+		form {
+
+			border: 4px dashed #fff;
+		}
+
+		form h1 {
+			text-align: center;
+			color: #ffffff;
+			text-shadow: #eee 1px 0 10px;
+		}
+
+		form div div {
+			width: 100%;
+			height: 100%;
+			text-align: center;
+			line-height: 1em;
+			color: #ffffff;
+			font-family: Arial;
+			text-decoration: double;
+		}
+
+		form input {
+			position: absolute;
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+			outline: none;
+			opacity: 0;
+		}
+
+		form button {
+			margin: 0;
+			color: #fff;
+			background: darkgray;
+			border: transparent;
+			border-top: 7px double white;
+			width: 100%;
+			font-size: 1.25em;
+			padding: 12px;
+			border-radius: 4px;
+			color: #fff;
+			text-shadow: 0px 1px 0px #999, 0px 2px 0px #888, 0px 3px 0px #777, 0px 4px 0px #666, 0px 5px 0px #555, 0px 6px 0px #444, 0px 7px 0px #333, 0px 8px 7px #001135;
+
+			transition: all .2s ease;
+			outline: none;
+		}
+
+		form button:hover {
+			background: #149174;
+			color: #0C5645;
+		}
+
+		form button:active {
+			border: 0;
+		}
+
+
+
+		.file-list-container {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			margin-top: 20px;
+		}
+
+		.file-list {
+			min-height: 300px;
+			overflow: auto;
+
+		}
+
+		.file-item {
+			display: flex;
+			align-items: center;
+			padding: 10px 0;
+			background-color: #f0f0f0;
+			border-radius: 5px;
+			margin-bottom: 10px;
+		}
+
+		.file-icon {
+			font-size: 24px;
+			margin-right: 10px;
+			color: #16a085;
+		}
+
+		.file-name {
+			font-size: 16px;
+			font-weight: bold;
+			color: #333;
+			text-align: left;
+		}
+
+		.file-size {
+			font-size: 14px;
+			margin-left: auto;
+			color: gray;
+			text-align: right;
+		}
+
+		form {
+
+			background: #333 center no-repeat url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MjkuODMyIiBoZWlnaHQ9IjI2MS45NjMiIHZpZXdCb3g9IjAgMCAxNjYuNjQzIDY5LjMxMSI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhIiB4MT0iOTMuMTg1IiB4Mj0iMTA3LjUzMyIgeTE9IjY3LjkzNyIgeTI9IjI3Ljc2OCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjEzMyIgc3RvcC1jb2xvcj0iI2ZmZiIgc3RvcC1vcGFjaXR5PSIuMjMyIi8+PHN0b3Agb2Zmc2V0PSIuODMiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtMjAuNzIxIC0xNi45MjkpIj48ZyB0cmFuc2Zvcm09Im1hdHJpeCguMzgzNzIgMCAwIC4zODM3MiAxOC40NiA1LjQ3KSI+PHBhdGggZD0iTTMwLjcxNCAyOS44NjVhOC42MjQgOC42MjQgMCAwIDAtOC42NDMgOC42NDNWNDguNjFoLS4zMDJBMTUuODQyIDE1Ljg0MiAwIDAgMCA1Ljg5MyA2NC40ODZ2OTMuNTY5YTE1Ljg0MiAxNS44NDIgMCAwIDAgMTUuODc2IDE1Ljg3NmgxMzcuNTY5YTE1Ljg0MyAxNS44NDMgMCAwIDAgMTUuODc3LTE1Ljg3NnYtOTMuNTdjMC04LjMxOS02LjMzNi0xNS4xLTE0LjQ2NC0xNS44MVYzOC41MDhjMC00Ljc4OC0zLjg1NS04LjY0My04LjY0My04LjY0M3MtOC42NDMgMy44NTUtOC42NDMgOC42NDNWNDguNjFoLTEzLjc1VjM4LjUwOGMwLTQuNzg4LTMuODU1LTguNjQzLTguNjQzLTguNjQzcy04LjY0MyAzLjg1NS04LjY0MyA4LjY0M1Y0OC42MUg5OS4wNzFWMzguNTA4YzAtNC43ODgtMy44NTUtOC42NDMtOC42NDMtOC42NDNzLTguNjQzIDMuODU1LTguNjQzIDguNjQzVjQ4LjYxSDY5LjIxNFYzOC41MDhjMC00Ljc4OC0zLjg1NS04LjY0My04LjY0My04LjY0M3MtOC42NDMgMy44NTUtOC42NDMgOC42NDNWNDguNjFIMzkuMzU3VjM4LjUwOGE4LjYyNCA4LjYyNCAwIDAgMC04LjY0My04LjY0M3ptMCAyLjg0OGMyLjYxMiAwIDQuNzE0IDMuMjg0IDQuNzE0IDcuMzY0djE4LjA3NWMwIDQuMDgtMi4xMDMgNy4zNjQtNC43MTQgNy4zNjRTMjYgNjIuMjMyIDI2IDU4LjE1MlY0MC4wNzdjMC00LjA4IDIuMTAzLTcuMzY0IDQuNzE0LTcuMzY0em0yOS44NTcgMGMyLjYxMiAwIDQuNzE0IDMuMjg0IDQuNzE0IDcuMzY0djE4LjA3NWMwIDQuMDgtMi4xMDMgNy4zNjQtNC43MTQgNy4zNjRzLTQuNzE0LTMuMjg0LTQuNzE0LTcuMzY0VjQwLjA3N2MwLTQuMDggMi4xMDMtNy4zNjQgNC43MTQtNy4zNjR6bTI5Ljg1NyAwYzIuNjEyIDAgNC43MTQgMy4yODQgNC43MTQgNy4zNjR2MTguMDc1YzAgNC4wOC0yLjEwMyA3LjM2NC00LjcxNCA3LjM2NHMtNC43MTQtMy4yODQtNC43MTQtNy4zNjRWNDAuMDc3YzAtNC4wOCAyLjEwMi03LjM2NCA0LjcxNC03LjM2NHptMzAuNjQ0IDBjMi42MTIgMCA0LjcxNCAzLjI4NCA0LjcxNCA3LjM2NHYxOC4wNzVjMCA0LjA4LTIuMTAyIDcuMzY0LTQuNzE0IDcuMzY0cy00LjcxNC0zLjI4NC00LjcxNC03LjM2NFY0MC4wNzdjMC00LjA4IDIuMTAzLTcuMzY0IDQuNzE0LTcuMzY0em0zMS4wMzUgMGMyLjYxMiAwIDQuNzE0IDMuMjg0IDQuNzE0IDcuMzY0djE4LjA3NWMwIDQuMDgtMi4xMDMgNy4zNjQtNC43MTQgNy4zNjRzLTQuNzE0LTMuMjg0LTQuNzE0LTcuMzY0VjQwLjA3N2MwLTQuMDggMi4xMDItNy4zNjQgNC43MTQtNy4zNjR6TTE2LjUwOCA3Ni44OTVoMTQ4LjA5djgwLjIyMWE4Ljk0IDguOTQgMCAwIDEtOC45NTkgOC45NThIMjUuNDY3YTguOTQgOC45NCAwIDAgMS04Ljk1OS04Ljk1OHYtNTIuNzk4eiIvPjxyZWN0IHdpZHRoPSIyMi4wMSIgaGVpZ2h0PSIyMi4wMSIgeD0iMjMuNjYiIHk9IjgyLjI3MiIgcnk9IjMuMjQ2Ii8+PHJlY3Qgd2lkdGg9IjIyLjAxIiBoZWlnaHQ9IjIyLjAxIiB4PSI1MS41NTUiIHk9IjgyLjI3MiIgcnk9IjMuMjQ2Ii8+PHJlY3Qgd2lkdGg9IjIyLjAxIiBoZWlnaHQ9IjIyLjAxIiB4PSI3OS4wMjYiIHk9IjgyLjI3MiIgcnk9IjMuMjQ2Ii8+PHJlY3Qgd2lkdGg9IjIyLjAxIiBoZWlnaHQ9IjIyLjAxIiB4PSIxMDcuMzQ0IiB5PSI4Mi4yNzIiIHJ5PSIzLjI0NiIvPjxyZWN0IHdpZHRoPSIyMi4wMSIgaGVpZ2h0PSIyMi4wMSIgeD0iMTM1LjY2MSIgeT0iODIuMjcyIiByeT0iMy4yNDYiLz48cmVjdCB3aWR0aD0iMjIuMDEiIGhlaWdodD0iMjIuMDEiIHg9IjIzLjY2IiB5PSIxMTAuNzE4IiByeT0iMy4yNDYiLz48cmVjdCB3aWR0aD0iMjIuMDEiIGhlaWdodD0iMjIuMDEiIHg9IjUxLjU1NSIgeT0iMTEwLjcxOCIgcnk9IjMuMjQ2Ii8+PHJlY3Qgd2lkdGg9IjIyLjAxIiBoZWlnaHQ9IjIyLjAxIiB4PSI3OS4wMjYiIHk9IjExMC43MTgiIHJ5PSIzLjI0NiIvPjxyZWN0IHdpZHRoPSIyMi4wMSIgaGVpZ2h0PSIyMi4wMSIgeD0iMTA3LjM0NCIgeT0iMTEwLjcxOCIgcnk9IjMuMjQ2Ii8+PHJlY3Qgd2lkdGg9IjIyLjAxIiBoZWlnaHQ9IjIyLjAxIiB4PSIxMzUuNjYxIiB5PSIxMTAuNzE4IiByeT0iMy4yNDYiLz48cmVjdCB3aWR0aD0iMjIuMDEiIGhlaWdodD0iMjIuMDEiIHg9IjIzLjY2IiB5PSIxMzkuMTY1IiByeT0iMy4yNDYiLz48cmVjdCB3aWR0aD0iMjIuMDEiIGhlaWdodD0iMjIuMDEiIHg9IjUxLjU1NSIgeT0iMTM5LjE2NSIgcnk9IjMuMjQ2Ii8+PHJlY3Qgd2lkdGg9IjIyLjAxIiBoZWlnaHQ9IjIyLjAxIiB4PSI3OS4wMjYiIHk9IjEzOS4xNjUiIHJ5PSIzLjI0NiIvPjxyZWN0IHdpZHRoPSI0OS44MjkiIGhlaWdodD0iNS4zNDIiIHg9IjEwNy43NzgiIHk9IjEzOS4yNTQiIHJ5PSIyLjQxNCIvPjxyZWN0IHdpZHRoPSI0OS44MjkiIGhlaWdodD0iNS4zNDIiIHg9IjEwNy43NzgiIHk9IjE0Ny40MjMiIHJ5PSIyLjQxNCIvPjxyZWN0IHdpZHRoPSI0OS44MjkiIGhlaWdodD0iNS4zNDIiIHg9IjEwNy43NzgiIHk9IjE1NS41OTEiIHJ5PSIyLjQxNCIvPjwvZz48cGF0aCBkPSJNMTMxLjkxNyAxNi45MjlhMy4zMSAzLjMxIDAgMCAwLTMuMzE2IDMuMzE2djMuODc2aC0uMTE2YTYuMDggNi4wOCAwIDAgMC02LjA5MiA2LjA5MnYzNS45MDRhNi4wOCA2LjA4IDAgMCAwIDYuMDkyIDYuMDkyaDUyLjc4N2E2LjA4IDYuMDggMCAwIDAgNi4wOTItNi4wOTJWMzAuMjE0YTYuMDc3IDYuMDc3IDAgMCAwLTUuNTUtNi4wNjd2LTMuOTAxYTMuMzEgMy4zMSAwIDEgMC02LjYzMyAwdjMuODc2aC01LjI3NnYtMy44NzZhMy4zMSAzLjMxIDAgMSAwLTYuNjMzIDB2My44NzZoLTUuMTI1di0zLjg3NmEzLjMxIDMuMzEgMCAxIDAtNi42MzMgMHYzLjg3NmgtNC44MjR2LTMuODc2YTMuMzEgMy4zMSAwIDEgMC02LjYzMyAwdjMuODc2aC00LjgyNHYtMy44NzZhMy4zMSAzLjMxIDAgMCAwLTMuMzE2LTMuMzE2em0wIDEuMDkzYzEuMDAyIDAgMS44MDkgMS4yNiAxLjgwOSAyLjgyNnY2LjkzNmMwIDEuNTY1LS44MDcgMi44MjYtMS44MDkgMi44MjZzLTEuODA5LTEuMjYtMS44MDktMi44MjZ2LTYuOTM2YzAtMS41NjUuODA3LTIuODI2IDEuODA5LTIuODI2em0xMS40NTcgMGMxLjAwMiAwIDEuODA5IDEuMjYgMS44MDkgMi44MjZ2Ni45MzZjMCAxLjU2NS0uODA3IDIuODI2LTEuODA5IDIuODI2cy0xLjgwOS0xLjI2LTEuODA5LTIuODI2di02LjkzNmMwLTEuNTY1LjgwNy0yLjgyNiAxLjgwOS0yLjgyNnptMTEuNDU3IDBjMS4wMDIgMCAxLjgwOSAxLjI2IDEuODA5IDIuODI2djYuOTM2YzAgMS41NjUtLjgwNyAyLjgyNi0xLjgwOSAyLjgyNnMtMS44MDktMS4yNi0xLjgwOS0yLjgyNnYtNi45MzZjMC0xLjU2NS44MDctMi44MjYgMS44MDktMi44MjZ6bTExLjc1OCAwYzEuMDAyIDAgMS44MDkgMS4yNiAxLjgwOSAyLjgyNnY2LjkzNmMwIDEuNTY1LS44MDcgMi44MjYtMS44MDkgMi44MjZzLTEuODA5LTEuMjYtMS44MDktMi44MjZ2LTYuOTM2YzAtMS41NjUuODA3LTIuODI2IDEuODA5LTIuODI2em0xMS45MDkgMGMxLjAwMiAwIDEuODA5IDEuMjYgMS44MDkgMi44MjZ2Ni45MzZjMCAxLjU2NS0uODA3IDIuODI2LTEuODA5IDIuODI2cy0xLjgwOS0xLjI2LTEuODA5LTIuODI2di02LjkzNmMwLTEuNTY1LjgwNy0yLjgyNiAxLjgwOS0yLjgyNnptLTUyLjAzMSAxNi45NTNoNTYuODI1VjY1Ljc1N2EzLjQzIDMuNDMgMCAwIDEtMy40MzggMy40MzdoLTQ5Ljk0OWEzLjQzIDMuNDMgMCAwIDEtMy40MzgtMy40MzdWNDUuNDk4eiIvPjxyZWN0IHdpZHRoPSIyLjUiIGhlaWdodD0iMzYuMzkxIiB4PSIxMzMuOTM5IiB5PSIzNC4yODkiIHJ5PSIxLjI1Ii8+PHJlY3Qgd2lkdGg9IjIuNSIgaGVpZ2h0PSIzNi4zOTEiIHg9IjE0My41MjUiIHk9IjM0LjI4OSIgcnk9IjEuMjUiLz48cmVjdCB3aWR0aD0iMi41IiBoZWlnaHQ9IjM2LjM5MSIgeD0iMTUzLjU0MyIgeT0iMzQuMjg5IiByeT0iMS4yNSIvPjxyZWN0IHdpZHRoPSIyLjUiIGhlaWdodD0iMzYuMzkxIiB4PSIxNjMuOTU0IiB5PSIzNC4yODkiIHJ5PSIxLjI1Ii8+PHJlY3Qgd2lkdGg9IjIuNSIgaGVpZ2h0PSIzNi4zOTEiIHg9IjE3My41NzkiIHk9IjM0LjI4OSIgcnk9IjEuMjUiLz48dGV4dCB4bWw6c3BhY2U9InByZXNlcnZlIiB4PSI1MS45MzUiIHk9Ijg2LjEyNiIgZm9udC1mYW1pbHk9IkJhaG5zY2hyaWZ0IiBmb250LXNpemU9IjE1LjU5NyIgc3R5bGU9ImZvbnQtdmFyaWF0aW9uLXNldHRpbmdzOndkdGggODcsd2dodCA3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiB4PSI1MS45MzUiIHk9Ijg2LjEyNiIgc3R5bGU9ImZvbnQtdmFyaWF0aW9uLXNldHRpbmdzOndkdGggODcsd2dodCA3MDAiPmlDYWw8L3RzcGFuPjwvdGV4dD48dGV4dCB4bWw6c3BhY2U9InByZXNlcnZlIiB4PSIxNTQuMjU4IiB5PSI4Ni4xMjYiIGZvbnQtZmFtaWx5PSJCYWhuc2NocmlmdCIgZm9udC1zaXplPSIxNS41OTciIHN0eWxlPSJmb250LXZhcmlhdGlvbi1zZXR0aW5nczp3ZHRoIDg3LHdnaHQgNzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj48dHNwYW4geD0iMTU0LjI1OCIgeT0iODYuMTI2IiBzdHlsZT0iZm9udC12YXJpYXRpb24tc2V0dGluZ3M6d2R0aCA4Nyx3Z2h0IDcwMCI+Q1NWPC90c3Bhbj48L3RleHQ+PHJlY3Qgd2lkdGg9IjU5LjUxOCIgaGVpZ2h0PSIyLjU1NCIgeD0iMTI0LjIzOSIgeT0iNTkuODY2IiByeT0iLjU0MiIvPjxyZWN0IHdpZHRoPSI2MC4wNzMiIGhlaWdodD0iMi4zNTciIHg9IjEyNC44OSIgeT0iNTAuNjk1IiByeT0iLjUiLz48cmVjdCB3aWR0aD0iNTkuNTE4IiBoZWlnaHQ9IjIuMzU3IiB4PSIxMjUuMjIxIiB5PSI0MC44NzQiIHJ5PSIuNSIvPjxwYXRoIGZpbGw9InVybCgjYSkiIGZpbGwtb3BhY2l0eT0iLjIxNyIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuMTE2IiBkPSJNMTE2LjYgNDAuOTgyaC0xMS4xMzFsMTAuMzE5LTE2LjI1aC0xM0w5MC42IDQ5LjEwN2g5LjU4N0w5MC42IDcxLjg1NnoiLz48L2c+PC9zdmc+');
+			background-size: contain;
+		}
+
+	
+	</style>
+</head>
+
+<body>
+	<div class="upload-container">
+		<form>
+			<h1>Merge .ics files and export as .csv</h1>
+			<input type="file" id="fileInput" multiple>
+			<div class="file-list-container">
+				<div class="file-list">Drag your .ics files here...</div>
+			</div>
+			<button onclick="mergeAndExport()">Merge and Export</button>
+		</form>
+		<script>
+			// upload and list files with filesize
+			let fileInput = document.getElementById('fileInput');
+			let fileList = document.querySelector('.file-list');
+
+			fileInput.addEventListener('change', function () {
+				let files = fileInput.files;
+				for (let i = 0; i < files.length; i++) {
+					let file = files[i];
+					let listItem = document.createElement('div');
+					listItem.classList.add('file-item');
+					let icon = document.createElement('i');
+					icon.classList.add('calendar-icon');
+					let name = document.createElement('div');
+					name.classList.add('file-name');
+					name.innerText = file.name;
+					let size = document.createElement('div');
+					size.classList.add('file-size');
+					size.innerText = formatBytes(file.size);
+					listItem.appendChild(icon);
+					listItem.appendChild(name);
+					listItem.appendChild(size);
+					fileList.appendChild(listItem);
+				}
+			});
+
+			function formatBytes(bytes, decimals = 2) {
+				if (bytes === 0) return '0 Bytes';
+				const k = 1024;
+				const dm = decimals < 0 ? 0 : decimals;
+				const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+				const i = Math.floor(Math.log(bytes) / Math.log(k));
+				return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+			}
+
+			// iCalMerge2csv
+			function mergeAndExport() {
+				const inputElements = document.getElementById("fileInput").files;
+				const calendarEvents = [];
+
+				for (let i = 0; i < inputElements.length; i++) {
+					const reader = new FileReader();
+					reader.onload = function (event) {
+						const fileContent = event.target.result;
+						const events = parseICal(fileContent);
+						calendarEvents.push(...events);
+
+						if (i === inputElements.length - 1) {
+							exportAsCSV(calendarEvents);
+						}
+					};
+					reader.readAsText(inputElements[i]);
+				}
+			}
+
+			function parseICal(fileContent) {
+				// Split the file content by line breaks
+				const lines = fileContent.trim().split("\n");
+
+				// Find all VEVENT blocks
+				const veventBlocks = [];
+				let currentBlock = null;
+				for (let i = 0; i < lines.length; i++) {
+					const line = lines[i].trim();
+					if (line === "BEGIN:VEVENT") {
+						currentBlock = [];
+					} else if (line === "END:VEVENT") {
+						veventBlocks.push(currentBlock);
+						currentBlock = null;
+					} else if (currentBlock !== null) {
+						currentBlock.push(line);
+					}
+				}
+
+				// Parse each VEVENT block into a calendar event object
+				const calendarEvents = [];
+				for (let i = 0; i < veventBlocks.length; i++) {
+					const veventBlock = veventBlocks[i];
+					const calendarEvent = {};
+					for (let j = 0; j < veventBlock.length; j++) {
+						const line = veventBlock[j];
+						const [key, value] = line.split(":");
+						if (key === "SUMMARY") {
+							calendarEvent.summary = value;
+						} else if (key === "DTSTART") {
+							calendarEvent.start = new Date(value);
+						} else if (key === "DTEND") {
+							calendarEvent.end = new Date(value);
+						} else if (key === "LOCATION") {
+							calendarEvent.location = value;
+						} else if (key === "DESCRIPTION") {
+							calendarEvent.description = value;
+						}
+					}
+					calendarEvents.push(calendarEvent);
+				}
+				return calendarEvents;
+			}
+
+			function exportAsCSV(calendarEvents) {
+				const csvContent = "data:text/csv;charset=utf-8," + convertToCSV(calendarEvents);
+				const encodedUri = encodeURI(csvContent);
+				const link = document.createElement("a");
+				link.setAttribute("href", encodedUri);
+				link.setAttribute("download", "merged_events.csv");
+				document.body.appendChild(link); // Required for Firefox
+				link.click();
+			}
+
+			function convertToCSV(calendarEvents) {
+				const lines = [];
+				lines.push("Summary,Start Time,End Time,Location,Description");
+				for (let i = 0; i < calendarEvents.length; i++) {
+					const event = calendarEvents[i];
+					const startTime = event.start.toLocaleString();
+					const endTime = event.end.toLocaleString();
+					const summary = event.summary || "";
+					const location = event.location || "";
+					const description = event.description || "";
+					lines.push(`${summary},${startTime},${endTime},${location},${description}`);
+				}
+				return lines.join("\n");
+			}
+		</script>
+</body>
+
+</html>
