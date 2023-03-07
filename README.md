@@ -5,7 +5,7 @@ The script bundles several .ics files into one .csv file
 
 ![Screenshot (48)](https://user-images.githubusercontent.com/127153603/223321052-0e3bcd60-f2a8-40a7-9f4c-36da0e4bf905.png)
 
-The Functions:
+The functions:
 ```javascript
 			// upload and list files with filesize
 			let fileInput = document.getElementById('fileInput');
